@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace 命名空间
+1、分类的作用，避免Sql语句重复
+2、就是与我们JAVA接口关联
+ -->
+ <mapper namespace="org.study.spring_mybatis.usermag.mapper.UserMapper">
+ 	<resultMap type="UserInfo" id="userMap">
+ 		<id property="id" column="id" javaType="java.lang.Long"/>
+ 		<result property="userName" column="user_name" javaType="java.lang.String"/>
+ 		<result property="loginName" column="login_name" javaType="java.lang.String"/>
+ 		<result property="pwd" column="password" javaType="java.lang.String"/>
+ 		<result property="age" column="age" javaType="int"/>
+ 	</resultMap>
+ 	<insert id="saveUserInfo" useGeneratedKeys="true" keyProperty="id">
+ 		insert into t_user (user_name,password,age) values(#{userName},#{pwd},#{age})
+ 	</insert>
+ 	<update id="updateUserInfo" parameterType="UserInfo">
+<!--  		update t_user set user_name = #{userName},password = #{pwd},age=#{age} where id = #{id}
+ --> 		
+ 			update t_user
+ 			<set>
+ 				<if test="userName !=null">
+ 					user_name = #{userName},
+ 				</if>
+ 				<if test="pwd !=null">
+ 					password = #{pwd},
+ 				</if>
+ 				<if test="age !=null">
+ 					age = #{age},
+ 				</if>
+ 			</set>
+ 			<where>
+ 				id = #{id}
+ 			</where>
+ </update>
+ 	<delete id="deleteUserInfo">
+ 		delete from t_user where id = #{id}
+ 	</delete>
+ 	<select id="getUserInfoById" resultMap="userMap">
+ 		select * from t_user where id = #{id}
+ 	</select>
+ 	<select id="getUserListByMapToPager" resultMap="userMap">
+ 		select * from t_user
+ 		<include refid="commonsql"></include>
+ 		limit #{map.index},#{map.rows}	
+ 	</select>
+ 	<select id="countUserListByMapToPager" resultType="int">
+ 		select count(id) from t_user
+ 		<include refid="commonsql"></include>
+ 	</select>
+ 	<sql id="commonsql">
+ 		<!-- <where>
+ 			<if test="map.userName != null">
+ 				and user_name like CONCAT(#{map.userName},'%')
+ 			</if>
+ 			<if test="map.loginName != null">
+ 				and login_name like CONCAT(#{map.loginName},'%')
+ 			</if>
+ 		</where> -->
+ 		<!-- 與where作用相同 -->
+ 		<trim prefix="where" prefixOverrides="and/or" >
+ 			<if test="map.userName != null">
+ 				and user_name like CONCAT(#{map.userName},'%')
+ 			</if>
+ 			<if test="map.loginName != null">
+ 				and login_name like CONCAT(#{map.loginName},'%')
+ 			</if>
+ 		</trim>
+ 	</sql>
+ 	<insert id="batchSaveUserInfo" parameterType="java.util.List">
+ 		insert into t_user (user_name,password,login_name,age) values 
+ 		<foreach collection="users" item="user" separator=",">
+ 			(#{user.userName},#{user.pwd},#{user.loginName},#{user.age})
+ 		</foreach>
+ 	</insert>
+ </mapper>
